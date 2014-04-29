@@ -42,8 +42,8 @@ struct particle
     double velocity[DOF];
 };
 
-struct particle* alloc_particle(double mass, double radius, double centroid[],
-    double velocity[])
+struct particle* alloc_particle(const double mass, const double radius, 
+    const double centroid[], const double velocity[])
 {
     int i;
 
@@ -66,14 +66,15 @@ void mmove_particle(struct particle* ppart, const double delta_time)
 }
 
 void maccelerate_particle(struct particle* ppart, const double delta_time,
-    double acceleration[])
+    const double acceleration[])
 {
     int i;
     for (i = 0; i < DOF; i++)
         ppart->velocity[i] += acceleration[i] * delta_time;
 }
 
-void me12_particle(double e12[], struct particle* pp1, struct particle* pp2)
+void me12_particle(double e12[], const struct particle* pp1, 
+    const struct particle* pp2)
 {
     int i;
     double norm;
@@ -94,6 +95,39 @@ void me12_particle(double e12[], struct particle* pp1, struct particle* pp2)
     }
 }
 
+double delta_particle(const struct particle* pp1, const struct particle* pp2)
+{
+    #if DOF == 2
+        return NORM_2D(pp1->centroid[X] - pp2->centroid[X],
+            pp1->centroid[Y] - pp2->centroid[Y]) - pp1->radius - pp2->radius;
+    #elif DOF == 3
+        return NORM_3D(pp1->centroid[X] - pp2->centroid[X],
+            pp1->centroid[Y] - pp2->centroid[Y],
+            pp1->centroid[Z] - pp2->centroid[Z],) - pp1->radius - pp2->radius;
+    #endif
+}
+
+void mforce_collision_spring_particle(double force_vec[], 
+    const struct particle* pp1, const struct particle* pp2, 
+    const double spring_constant)
+{
+    int i;
+    double delta;
+
+    delta = delta_particle(pp1, pp2);    
+    if (delta < 0)
+    {
+        me12_particle(force_vec, pp1, pp2);
+        for (i = 0; i < DOF; i++)
+            force_vec[i] *= delta * spring_constant;
+    }
+    else
+    {
+        for (i = 0; i < DOF; i++)
+            force_vec[i] = 0;
+    }
+}
+
 /*
 double overlap_particle(struct particle* pp1, struct particle* pp2)
 {
@@ -105,36 +139,46 @@ double overlap_particle(struct particle* pp1, struct particle* pp2)
 
 int main(int argc, char* argv[])
 {
-    double c1[DOF] = {0.0, 0.0};
-    double c2[DOF] = {0.0, 0.0};
+    double c1[DOF] = {0.0, 5.0};
+    double c2[DOF] = {5.0, 0.0};
     
     double v1[DOF] = {1.0, 0.0};
     double v2[DOF] = {0.0, 1.0};
     
-    double a2[DOF] = {0.0, -0.1};
+    double a1[DOF];
+    double a2[DOF];
     
     double e12[DOF];
+    double f12[DOF] = {0.0, 0.0};
     
     struct particle* ppa = alloc_particle(12.1, 3.2, c1, v1);
     struct particle* ppb = alloc_particle(3.2, 1.0, c2, v2);
     
-    const int iters = 10;
-    const double delta_t = 0.5;
+    const int iters = 100;
+    const double delta_t = 0.1;
     double time = 0;
-    int i;
+    int i, j;
     
-    printf("%8s %8s %8s %8s %8s %8s %8s\n","time","x1","y1","x2","y2", "e1", "e2");
+    const k = 10;
+    
+    printf("%8s %8s %8s %8s %8s %8s %8s\n","time","x1","y1","x2","y2", "f1", "f2");
     for (i = 0; i < iters; i++)
     {
-        me12_particle(e12, ppa, ppb);
-        
         printf("%8g %8g %8g %8g %8g %8g %8g\n", time, ppa->centroid[X], 
-            ppa->centroid[Y], ppb->centroid[X], ppb->centroid[Y], e12[X],
-            e12[Y]);
+            ppa->centroid[Y], ppb->centroid[X], ppb->centroid[Y], f12[X],
+            f12[Y]);
             
         mmove_particle(ppa, delta_t);
         mmove_particle(ppb, delta_t);
+        mforce_collision_spring_particle(f12, ppa, ppb, k);
+        for (j = 0; j < DOF; j++)
+        {
+            a1[j] = f12[j]/ppa->mass;
+            a2[j] = -f12[j]/ppb->mass;
+        }
+        maccelerate_particle(ppa, delta_t, a1);
         maccelerate_particle(ppb, delta_t, a2);
+        
         time += delta_t;
     }
     
