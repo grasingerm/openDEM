@@ -28,6 +28,12 @@ void die(const char *message)
 
 #define DOF 2
 
+#define NORM_2D(x, y) sqrt((x)*(x)+(y)*(y))
+#define NORM_3D(x, y, z) sqrt((x)*(x)+(y)*(y)+(z)*(z))
+
+#define NORM_2D_VEC(v) NORM_2D(v[X], v[Y])
+#define NORM_3D_VEC(v) NORM_3D(v[X], v[Y], v[Z])
+
 struct particle
 {
     double mass;
@@ -67,8 +73,26 @@ void maccelerate_particle(struct particle* ppart, const double delta_time,
         ppart->velocity[i] += acceleration[i] * delta_time;
 }
 
-#define NORM_2D(x, y) sqrt((x)*(x)+(y)*(y))
-#define NORM_3D(x, y, z) sqrt((x)*(x)+(y)*(y)+(z)*(z))
+void me12_particle(double e12[], struct particle* pp1, struct particle* pp2)
+{
+    int i;
+    double norm;
+    
+    for (i = 0; i < DOF; i++)
+        e12[i] = pp2->centroid[i] - pp1->centroid[i];
+        
+    #if DOF == 2
+        norm = NORM_2D_VEC(e12);
+    #elif DOF == 3
+        norm = NORM_3D_VEC(e12);
+    #endif
+    
+    if (norm != 0)
+    {
+        for (i = 0; i < DOF; i++)
+            e12[i] /= norm;
+    }
+}
 
 /*
 double overlap_particle(struct particle* pp1, struct particle* pp2)
@@ -89,6 +113,8 @@ int main(int argc, char* argv[])
     
     double a2[DOF] = {0.0, -0.1};
     
+    double e12[DOF];
+    
     struct particle* ppa = alloc_particle(12.1, 3.2, c1, v1);
     struct particle* ppb = alloc_particle(3.2, 1.0, c2, v2);
     
@@ -97,11 +123,15 @@ int main(int argc, char* argv[])
     double time = 0;
     int i;
     
-    printf("%8s %8s %8s %8s %8s\n","time","x1","y1","x2","y2");
+    printf("%8s %8s %8s %8s %8s %8s %8s\n","time","x1","y1","x2","y2", "e1", "e2");
     for (i = 0; i < iters; i++)
     {
-        printf("%8g %8g %8g %8g %8g\n", time, ppa->centroid[X], 
-            ppa->centroid[Y], ppb->centroid[X], ppb->centroid[Y]);
+        me12_particle(e12, ppa, ppb);
+        
+        printf("%8g %8g %8g %8g %8g %8g %8g\n", time, ppa->centroid[X], 
+            ppa->centroid[Y], ppb->centroid[X], ppb->centroid[Y], e12[X],
+            e12[Y]);
+            
         mmove_particle(ppa, delta_t);
         mmove_particle(ppb, delta_t);
         maccelerate_particle(ppb, delta_t, a2);
