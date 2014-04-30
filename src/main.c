@@ -1,17 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sqlite3.h>
 #include <math.h>
 #include <errno.h>
 
 enum dofs { X, Y, Z };
 
-/*
-struct point
-{
-    double x;
-    double y;
-}; */
-
+/**
+ * Exit the program and print error message
+ *
+ * @param message Error message
+ */
 void die(const char *message)
 {
     if(errno)
@@ -42,6 +41,15 @@ struct particle
     double velocity[DOF];
 };
 
+/**
+ * Allocate a particle on the heap
+ *
+ * @param mass Mass of the particle
+ * @param radius Radius of the particle
+ * @param centroid Coordinates of the particle centroid
+ * @param velocity Components of the velocity vector
+ * @return Pointer to a new particle
+ */
 struct particle* alloc_particle(const double mass, const double radius, 
     const double centroid[], const double velocity[])
 {
@@ -58,6 +66,12 @@ struct particle* alloc_particle(const double mass, const double radius,
     }
 }
 
+/**
+ * Move a particle for a given time step, mutator
+ *
+ * @param ppart Pointer to particle to move
+ * @param delta_time Time of step
+ */
 void mmove_particle(struct particle* ppart, const double delta_time)
 {
     int i;
@@ -73,6 +87,13 @@ void maccelerate_particle(struct particle* ppart, const double delta_time,
         ppart->velocity[i] += acceleration[i] * delta_time;
 }
 
+/**
+ * Unit vector normal to particle 1 in the direction of particle 2, mutator
+ *
+ * @param e12 Array to store unit normal vector in
+ * @param pp1 Pointer to particle 1
+ * @param pp2 Pointer to particle 2
+ */
 void me12_particle(double e12[], const struct particle* pp1, 
     const struct particle* pp2)
 {
@@ -95,6 +116,13 @@ void me12_particle(double e12[], const struct particle* pp1,
     }
 }
 
+/**
+ * Distance between two particles
+ *
+ * @param pp1 Pointer to particle 1
+ * @param pp2 Pointer to particle 2
+ * @return Distance between particles
+ */
 double delta_particle(const struct particle* pp1, const struct particle* pp2)
 {
     #if DOF == 2
@@ -107,6 +135,14 @@ double delta_particle(const struct particle* pp1, const struct particle* pp2)
     #endif
 }
 
+/**
+ * Particle-particle collision model, spring; mutator
+ *
+ * @param force_vec Array to store force vector in
+ * @param pp1 Pointer to particle 1
+ * @param pp2 Pointer to particle 2
+ * @param spring_constant Spring constant, k
+ */
 void mforce_collision_spring_particle(double force_vec[], 
     const struct particle* pp1, const struct particle* pp2, 
     const double spring_constant)
@@ -129,14 +165,8 @@ void mforce_collision_spring_particle(double force_vec[],
 }
 
 /*
-double overlap_particle(struct particle* pp1, struct particle* pp2)
-{
-    double e_12[DOF];
-    double norm;
-    #if DOF == 2
-        norm = 2D_NORM( 
-*/
-
+ * Main function
+ */
 int main(int argc, char* argv[])
 {
     double c1[DOF] = {0.0, 5.0};
