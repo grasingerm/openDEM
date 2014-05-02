@@ -25,3 +25,6 @@
 *Make
 *make
 *makefile
+
+# Automatically generated documentation
+doc/*
