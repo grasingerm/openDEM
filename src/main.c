@@ -33,6 +33,14 @@ void die(const char *message)
 #define NORM_2D_VEC(v) NORM_2D(v[X], v[Y])
 #define NORM_3D_VEC(v) NORM_3D(v[X], v[Y], v[Z])
 
+/**
+ * Particle structure
+ *
+ * @member mass Particle mass
+ * @member radius Particle radius
+ * @memeber centroid Coordinates of the particle centroid
+ * @member velocity Components of the velocity vector
+ */
 struct particle
 {
     double mass;
@@ -189,7 +197,28 @@ int main(int argc, char* argv[])
     double time = 0;
     int i, j;
     
-    const k = 10;
+    int const k = 10;
+    
+    sqlite3 *db;
+    char *zErrMsg = 0;
+    int rc;
+  
+    if( argc!=2 ){
+      fprintf(stderr, "Usage: %s OUTFILE\n", argv[0]);
+      return(1);
+    }
+    rc = sqlite3_open(argv[1], &db);
+    if( rc ){
+      fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+      sqlite3_close(db);
+      return(1);
+    }
+    rc = sqlite3_exec(db, argv[2], callback, 0, &zErrMsg);
+    if( rc!=SQLITE_OK ){
+      fprintf(stderr, "SQL error: %s\n", zErrMsg);
+      sqlite3_free(zErrMsg);
+    }
+    sqlite3_close(db);
     
     printf("%8s %8s %8s %8s %8s %8s %8s\n","time","x1","y1","x2","y2", "f1", "f2");
     for (i = 0; i < iters; i++)
