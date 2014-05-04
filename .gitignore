@@ -26,5 +26,10 @@
 *make
 *makefile
 
+# CMake files
+*CMakeCache.txt
+*CMakeFiles*
+*cmake_install.cmake
+
 # Automatically generated documentation
 doc/*

@@ -6,11 +6,13 @@ set(CMAKE_C_FLAGS "-Wextra -g")
 
 set(EXECUTABLE_OUTPUT_PATH bin)
 
-add_executable (dem main.c)
+add_executable (dem main.c particle.c debug.c record.c)
 
-# if building in unix we need to link against math libraries
+# c building in unix we need to link against math libraries
 IF(UNIX)
-    TARGET_LINK_LIBRARIES(dem m)
+    target_link_libraries (dem m)
 ENDIF(UNIX)
+
+target_link_libraries (dem sqlite3)
 
 install (TARGETS dem DESTINATION bin)

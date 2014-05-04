@@ -4,26 +4,9 @@
 #include <math.h>
 #include <errno.h>
 
+#include "debug.h"
 #include "particle.h"
-
-/**
- * Exit the program and print error message
- *
- * @param message Error message
- */
-void die(const char *message)
-{
-    if(errno)
-    {
-        perror(message);
-    }
-    else
-    {
-        printf("ERROR: %s\n", message);
-    }
-
-    exit(1);
-}
+#include "record.h"
 
 /*
  * Main function
@@ -44,6 +27,9 @@ int main(int argc, char* argv[])
     
     struct odem_particle* ppa = odem_alloc_particle(12.1, 3.2, c1, v1);
     struct odem_particle* ppb = odem_alloc_particle(3.2, 1.0, c2, v2);
+    
+    struct odem_particle_node* ppart_list = odem_alloc_particle_node(ppa);
+    odem_mparticle_list_push(&ppart_list, ppb);
     
     const int iters = 100;
     const double delta_time = 0.1;
@@ -73,8 +59,36 @@ int main(int argc, char* argv[])
         time += delta_time;
     }
     
-    free(ppa);
-    free(ppb);
+    struct odem_particle_node* curr_node;
+    printf("%8s %8s\n", "mass", "radius");
+    for (curr_node = ppart_list; curr_node != NULL; 
+        curr_node = curr_node->next)
+        printf("%8g %8g\n", curr_node->ppart->mass, curr_node->ppart->radius);
+    
+    sqlite3 *db;
+    sqlite3_stmt *stmt;
+    int rc;
+    char *errmsg;
+    #define BUFFER_SIZE 256
+    char sqlite_msg[BUFFER_SIZE];
+    size_t msg_size = sizeof(sqlite_msg);
+    
+    /*
+     * open SQLite database file test.db
+     * use ":memory:" to use an in-memory database
+     */
+    rc = sqlite3_open("results.db", &db);
+    if (rc != SQLITE_OK) {
+        snprintf(sqlite_msg, msg_size, "ERROR opening database: %s\n", 
+            sqlite3_errmsg(db));
+        die(sqlite_msg);
+    }
+    
+    odem_init_results_db(db, stmt);
+    odem_record_particle_data(db, stmt, ppart_list);
+    
+    sqlite3_finalize(stmt);
+    odem_dealloc_particle_list(ppart_list);
     
     return 0;
 }

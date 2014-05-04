@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
+
+#include "debug.h"
 #include "particle.h"
 
 /**
@@ -28,6 +30,52 @@ struct odem_particle* odem_alloc_particle(const double mass, const double radius
 }
 
 /**
+ * Allocate a particle node on the heap
+ *
+ * @param ppart Pointer to a particle
+ * @return Pointer to a new particle node
+ */
+struct odem_particle_node* odem_alloc_particle_node(
+    struct odem_particle* const ppart)
+{
+    struct odem_particle_node* new_node = malloc(sizeof(
+        struct odem_particle_node));
+    if (new_node == NULL) die("Memory allocation error.");
+    new_node->next = NULL;
+    new_node->ppart = ppart;
+    return new_node;
+}
+
+/**
+ * Push a particle node onto a linked list
+ *
+ * @param head Pointer to the head node
+ * @param ppart Pointer to particle to be added
+ */
+void odem_mparticle_list_push(struct odem_particle_node** head,
+    struct odem_particle* const ppart)
+{
+    struct odem_particle_node* new_node = odem_alloc_particle_node(ppart);
+    new_node->next = *head;
+    *head = new_node;
+}
+
+/**
+ * Free memory from a particle linked list
+ *
+ * @param head Pointer to head node of list
+ */
+void odem_dealloc_particle_list(struct odem_particle_node* head)
+{
+    struct odem_particle_node* curr_node;
+    for (curr_node = head; curr_node != NULL; curr_node = curr_node->next)
+    {
+        free(curr_node->ppart);
+        free(curr_node);
+    }
+}
+
+/**
  * Move a particle for a given time step, mutator
  *
  * @param ppart Pointer to particle to move
@@ -40,6 +88,12 @@ void odem_mmove_particle(struct odem_particle* ppart, const double delta_time)
         ppart->centroid[i] += ppart->velocity[i] * delta_time;
 }
 
+/**
+ * Accelerate a particle for a given time step, mutator
+ *
+ * @param ppart Pointer to particle to accelerate
+ * @param delta_time Time of step
+ */
 void odem_maccel_particle(struct odem_particle* ppart, const double delta_time,
     const double acceleration[])
 {
