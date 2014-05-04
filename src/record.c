@@ -50,15 +50,17 @@ void odem_init_results_db(sqlite3 *db, sqlite3_stmt *stmt)
         "(particle_id INTEGER PRIMARY KEY AUTOINCREMENT, mass REAL,"
         " radius REAL)");
     
-    #if ODEM_DOF == 2
+    #if ODEM_DOF == 3
         odem_exec_noselect_db(db, stmt, 
             "CREATE TABLE motion (time REAL, particle_id INTEGER, x REAL,"
-            " y REAL, FOREIGN KEY(particle_id) REFERENCES"
-            " particle(particle_id))");
-    #elif ODEM_DOF == 3
+            " y REAL, z REAL, v_x REAL, v_y REAL, v_z REAL, a_x REAL, a_y REAL,"
+            " a_z REAL, f_x REAL, f_y REAL, f_z REAL,"
+            " FOREIGN KEY(particle_id) REFERENCES particle(particle_id))");
+    #elif ODEM_DOF == 2
         odem_exec_noselect_db(db, stmt, 
             "CREATE TABLE motion (time REAL, particle_id INTEGER, x REAL,"
-            " y REAL, z REAL, FOREIGN KEY(particle_id) REFERENCES"
+            " y REAL, v_x REAL, v_y REAL, a_x REAL, a_y REAL, f_x REAL,"
+            " f_y REAL, FOREIGN KEY(particle_id) REFERENCES"
             " particle(particle_id))");
     #endif
     odem_exec_noselect_db(db, stmt, 
@@ -87,4 +89,29 @@ void odem_record_particle_data(sqlite3 *db, sqlite3_stmt *stmt, struct
             curr_node->ppart->mass, curr_node->ppart->radius);
         odem_exec_noselect_db(db, stmt, sql);
     }
+}
+
+void odem_record_motion(sqlite3 *db, sqlite3_stmt *stmt, const double time,
+    const int particle_id, const struct odem_particle* ppart, 
+    const double accel_vec[], const double force_vec[])
+{
+    char sql[512];
+    
+    #if ODEM_DOF == 3
+        snprintf(sql, sizeof(sql), "INSERT INTO motion"
+            " VALUES (%lf, %d, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf,"
+            " %lf, %lf)",
+            time, particle_id, ppart->centroid[X], ppart->centroid[Y],
+            ppart->centroid[Z], ppart->velocity[X], ppart->velocity[Y],
+            accel_vec[X], accel_vec[Y], accel_vec[Z], force_vec[X], 
+            force_vec[Y], force_vec[Z]);
+    #elif ODEM_DOF == 2
+        snprintf(sql, sizeof(sql), "INSERT INTO motion"
+            " VALUES (%lf, %d, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf)",
+            time, particle_id, ppart->centroid[X], ppart->centroid[Y],
+            ppart->velocity[X], ppart->velocity[Y], accel_vec[X], accel_vec[Y],
+            force_vec[X], force_vec[Y]);
+    #endif
+    
+    odem_exec_noselect_db(db, stmt, sql);
 }

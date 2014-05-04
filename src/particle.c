@@ -67,11 +67,15 @@ void odem_mparticle_list_push(struct odem_particle_node** head,
  */
 void odem_dealloc_particle_list(struct odem_particle_node* head)
 {
-    struct odem_particle_node* curr_node;
-    for (curr_node = head; curr_node != NULL; curr_node = curr_node->next)
+    struct odem_particle_node *curr_node, *node_to_free;
+    
+    curr_node = head;
+    while (curr_node != NULL)
     {
-        free(curr_node->ppart);
-        free(curr_node);
+        node_to_free = curr_node;
+        curr_node = curr_node->next;
+        free(node_to_free->ppart);
+        free(node_to_free);
     }
 }
 
@@ -157,8 +161,9 @@ double odem_delta(const struct odem_particle* pp1, const struct odem_particle* p
  * @param pp1 Pointer to particle 1
  * @param pp2 Pointer to particle 2
  * @param spring_constant Spring constant, k
+ * @return whether or not a collision has occurred
  */
-void odem_mforce_collision_spring(double force_vec[], 
+int odem_mforce_collision_spring(double force_vec[], 
     const struct odem_particle* pp1, const struct odem_particle* pp2, 
     const double spring_constant)
 {
@@ -171,10 +176,12 @@ void odem_mforce_collision_spring(double force_vec[],
         odem_me12(force_vec, pp1, pp2);
         for (i = 0; i < ODEM_DOF; i++)
             force_vec[i] *= delta * spring_constant;
+        return 1;
     }
     else
     {
         for (i = 0; i < ODEM_DOF; i++)
             force_vec[i] = 0;
+        return 0;
     }
 }
