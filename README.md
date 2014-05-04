@@ -20,6 +20,12 @@ bin/odem-sim path/to/input_file.json path/to/results.db
 ### Windows
 I'm not a doctor. Documentation [here](http://www.cmake.org/cmake/help/runningcmake.html).
 
+### Dependencies
+1. libsqlite3
+2. libjson
+3. gtk+3
+4. cairo2
+
 ## Theory
 
 Based off of kinetic particle theory.
