@@ -13,7 +13,7 @@
  * @param velocity Components of the velocity vector
  * @return Pointer to a new particle
  */
-struct odem_particle* odem_alloc_particle(const double mass, const double radius, 
+struct odem_particle* odem_alloc_particle(const double mass, const double radius,
     const double centroid[], const double velocity[])
 {
     int i;
@@ -68,7 +68,7 @@ void odem_mparticle_list_push(struct odem_particle_node** head,
 void odem_dealloc_particle_list(struct odem_particle_node* head)
 {
     struct odem_particle_node *curr_node, *node_to_free;
-    
+
     curr_node = head;
     while (curr_node != NULL)
     {
@@ -113,21 +113,21 @@ void odem_maccel_particle(struct odem_particle* ppart, const double delta_time,
  * @param pp1 Pointer to particle 1
  * @param pp2 Pointer to particle 2
  */
-void odem_me12(double e12[], const struct odem_particle* pp1, 
+void odem_me12(double e12[], const struct odem_particle* pp1,
     const struct odem_particle* pp2)
 {
     int i;
     double ODEM_NORM;
-    
+
     for (i = 0; i < ODEM_DOF; i++)
         e12[i] = pp2->centroid[i] - pp1->centroid[i];
-        
+
     #if ODEM_DOF == 2
         ODEM_NORM = ODEM_NORM_2D_VEC(e12);
     #elif ODEM_DOF == 3
         ODEM_NORM = ODEM_NORM_3D_VEC(e12);
     #endif
-    
+
     if (ODEM_NORM != 0)
     {
         for (i = 0; i < ODEM_DOF; i++)
@@ -163,14 +163,14 @@ double odem_delta(const struct odem_particle* pp1, const struct odem_particle* p
  * @param spring_constant Spring constant, k
  * @return whether or not a collision has occurred
  */
-int odem_mforce_collision_spring(double force_vec[], 
-    const struct odem_particle* pp1, const struct odem_particle* pp2, 
+int odem_mforce_collision_spring(double force_vec[],
+    const struct odem_particle* pp1, const struct odem_particle* pp2,
     const double spring_constant)
 {
     int i;
     double delta;
 
-    delta = odem_delta(pp1, pp2);    
+    delta = odem_delta(pp1, pp2);
     if (delta < 0)
     {
         odem_me12(force_vec, pp1, pp2);
@@ -185,3 +185,43 @@ int odem_mforce_collision_spring(double force_vec[],
         return 0;
     }
 }
+
+/**
+ * Particle-boundary collision model, spring; mutator
+ *
+ * @param force_vec Array to store force vector in
+ * @param ppart Pointer to particle
+ * @param bounds Array containing boundaries
+ * @param spring_constant Spring constant, k
+ * @return whether or not a collision has occurred
+ */
+int odem_mforce_boundary_collision_spring(double force_vec[],
+    const struct odem_particle* ppart, const double bounds[],
+    const double spring_constant)
+{
+    int i, collision = 0;
+    double delta;
+
+    for (i = 0; i < ODEM_DOF; i++)
+    {
+        /* check for collision at min dof boundary */
+        delta = ppart->centroid[i] - bounds[2*i] - ppart->radius;
+        if (delta < 0)
+        {
+            collision = 1;
+            force_vec[i] = -delta * spring_constant;
+            continue;
+        }
+
+        /* check for collision at max dof boundary */
+        delta = bounds[2*i+1] - ppart->centroid[i] - ppart->radius;
+        if (delta < 0)
+        {
+            collision = 1;
+            force_vec[i] = delta * spring_constant;
+        }
+    }
+
+    return collision;
+}
+
