@@ -55,10 +55,6 @@ int main(int argc, char* argv[])
         die(sqlite_msg);
     }
 
-    struct odem_particle_node* curr_node;
-    for (curr_node = ppart_list; curr_node != NULL; curr_node = curr_node->next)
-        printf("%g %g\n", curr_node->ppart->mass, curr_node->ppart->radius);
-
     /* run analysis and write results to the database */
     printf("Initializing results database: %s\n", data_file);
     odem_init_results_db(db);

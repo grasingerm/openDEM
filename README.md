@@ -1,15 +1,33 @@
-openDEM
-=======
+# openDEM
 
 Open source Discrete Element Modeling
 
-I want to collide particles because I think it will be cool.
+## Building
 
-Particle Interations
-------------
+This project requires cmake.
 
-Spring model
-____________
+Navigate to root directory:
+
+### Linux
+```bash
+mkdir build
+cd build
+cmake ../src
+make
+bin/odem-sim path/to/input_file.json path/to/results.db
+```
+
+### Windows
+I'm not a doctor. Documentation [here](http://www.cmake.org/cmake/help/runningcmake.html).
+
+## Theory
+
+Based off of kinetic particle theory.
+
+### Particle Interations
+
+#### Spring model
+
 * k -> spring constant
 * e_12 -> vector normal to one particle in direction of the other particle
 * e_12 = (x_2 - x_1) / norm(x_2 - x_1)
@@ -25,8 +43,7 @@ ____________
 * F_2 = -F_1
 | where F_1, F_2 -> force on first particle, force on second particle
 
-Spring-dashpot model
-____________________
+#### Spring-dashpot model
 * Dashpot term is analogous to coefficient of restitution
 * 0 < eta < 1
 
@@ -44,8 +61,7 @@ ____________________
 * gamma -> energy loss, allows the model to lose energy in a controlled way
 * gamma = -2*m_12*ln(eta) / t_coll
 
-Coulomb friction model
-______________________
+#### Coulomb friction model
 * F_f = mu * F_n
 * F_f -> frictional force
 * mu -> frictional coefficient
