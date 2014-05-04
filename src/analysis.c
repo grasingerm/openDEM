@@ -45,9 +45,8 @@ void set_double_data(struct double_node* curr_double_node, double data[])
 
 /* analysis logic */
 
-void odem_run_analysis(sqlite3 *db, sqlite3_stmt* stmt, 
-    struct odem_particle_node* const ppart_list, const int iters, const double
-    delta_time, const int verbose)
+void odem_run_analysis(sqlite3 *db, struct odem_particle_node* const ppart_list,
+    const int iters, const double delta_time, const int verbose)
 {
     printf("Starting analysis...\n");
 
@@ -127,7 +126,7 @@ void odem_run_analysis(sqlite3 *db, sqlite3_stmt* stmt,
                     node_i->ppart->velocity[j];
                 force[j] = node_i->ppart->mass * acceleration[j];
             }
-            odem_record_motion(db, stmt, time, particle_id, node_i->ppart,
+            odem_record_motion(db, time, particle_id, node_i->ppart,
                 acceleration, force);
         }
     }

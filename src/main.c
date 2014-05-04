@@ -34,11 +34,10 @@ int main(int argc, char* argv[])
     odem_mparticle_list_push(&ppart_list, 
         odem_alloc_particle(3.2, 1.0, c4, v4));
     
-    const int iters = 150;
+    const int iters = 550;
     const double delta_time = 0.1;
     
     sqlite3 *db;
-    sqlite3_stmt *stmt;
     int rc;
     char *errmsg;
     #define BUFFER_SIZE 256
@@ -57,13 +56,12 @@ int main(int argc, char* argv[])
     
     /* run analysis and write results to the database */
     printf("Initializing results database: %s\n", data_file);
-    odem_init_results_db(db, stmt);
-    odem_record_particle_data(db, stmt, ppart_list);
-    odem_run_analysis(db, stmt, ppart_list, iters, delta_time, 1);
+    odem_init_results_db(db);
+    odem_record_particle_data(db, ppart_list);
+    odem_run_analysis(db, ppart_list, iters, delta_time, 1);
     
     /* clean up */
     printf("Freeing dynamic memory...\n");
-    //sqlite3_finalize(stmt);
     sqlite3_close(db);
     odem_dealloc_particle_list(ppart_list);
     
