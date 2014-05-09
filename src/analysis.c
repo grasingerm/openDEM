@@ -88,7 +88,7 @@ void odem_run_analysis(sqlite3 *db, struct odem_particle_node* const ppart_list,
         for (node_i = ppart_list; node_i != NULL; node_i = node_i->next)
         {
             if (odem_mforce_boundary_collision_spring(force_vec, node_i->ppart,
-                delta_time, k))
+                bounds, k))
             {
                 collisions++;
                 /* accelerate particle */
@@ -158,7 +158,7 @@ void odem_run_analysis(sqlite3 *db, struct odem_particle_node* const ppart_list,
 
     /* display profile result */
     end = clock();
-    time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    time_spent = ((double)(end - begin)) / CLOCKS_PER_SEC;
     printf("Analysis completed in %g seconds.\n", time_spent);
 }
 

@@ -18,7 +18,8 @@ struct odem_particle* odem_alloc_particle(const double mass, const double radius
 {
     int i;
 
-    struct odem_particle* new_particle = malloc(sizeof(struct odem_particle));
+    struct odem_particle* new_particle = (struct odem_particle*)malloc(
+        sizeof(struct odem_particle));
     if (new_particle == NULL) die("Memory allocation error");
     new_particle->mass = mass;
     new_particle->radius = radius;
@@ -27,6 +28,7 @@ struct odem_particle* odem_alloc_particle(const double mass, const double radius
         new_particle->centroid[i] = centroid[i];
         new_particle->velocity[i] = velocity[i];
     }
+    return new_particle;
 }
 
 /**
@@ -38,8 +40,8 @@ struct odem_particle* odem_alloc_particle(const double mass, const double radius
 struct odem_particle_node* odem_alloc_particle_node(
     struct odem_particle* const ppart)
 {
-    struct odem_particle_node* new_node = malloc(sizeof(
-        struct odem_particle_node));
+    struct odem_particle_node* new_node = (struct odem_particle_node*)malloc(
+        sizeof(struct odem_particle_node));
     if (new_node == NULL) die("Memory allocation error.");
     new_node->next = NULL;
     new_node->ppart = ppart;
