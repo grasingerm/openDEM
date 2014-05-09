@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 2.8)
 project (openDEM)
 
 SET(CMAKE_BUILD_TYPE debug)
-set(CMAKE_C_FLAGS_DEBUG "-Wextra -g")
-set(CMAKE_C_FLAGS_RELEASE "-Wextra -g -O3")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -g")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -Wextra -g -O3")
 
 set(CMAKE_BINARY_DIR build)
 set(EXECUTABLE_OUTPUT_PATH bin)
