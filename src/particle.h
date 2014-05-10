@@ -52,6 +52,8 @@ void odem_me12(double[], const struct odem_particle*, const struct odem_particle
 double odem_delta(const struct odem_particle*, const struct odem_particle*);
 int odem_mforce_collision_spring(double[], const struct odem_particle*,
     const struct odem_particle*, const double);
+int odem_mforce_boundary_collision_spring(double[], const struct odem_particle*,
+    const double[], const double);
 
 struct odem_particle_node* odem_alloc_particle_node(struct odem_particle* const);
 void odem_mparticle_list_push(struct odem_particle_node**,

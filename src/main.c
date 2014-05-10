@@ -6,6 +6,7 @@
 
 #include "debug.h"
 #include "particle.h"
+#include "analysis.h"
 #include "record.h"
 
 /*
