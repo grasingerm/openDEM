@@ -50,7 +50,8 @@ int main(int argc, char* argv[])
 
     /* TODO: pass database file name as command-line argument */
     rc = sqlite3_open(data_file, &db);
-    if (rc != SQLITE_OK) {
+    if (rc != SQLITE_OK)
+    {
         snprintf(sqlite_msg, msg_size, "ERROR opening database: %s\n",
             sqlite3_errmsg(db));
         die(sqlite_msg);

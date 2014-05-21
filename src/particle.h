@@ -2,7 +2,7 @@
 
 #define __PARTICLE_H 1
 
-enum odem_ODEM_DOF { X, Y, Z };
+enum odem_dof { X, Y, Z };
 
 #define ODEM_DOF 2
 

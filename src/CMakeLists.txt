@@ -1,24 +1,26 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required(VERSION 2.8)
 
-project (openDEM)
+project(afemhw)
 
-SET(CMAKE_BUILD_TYPE debug)
+# compiler flags
+
+if(UNIX)
+    set(CMAKE_C_COMPILER clang)
+    set(CMAKE_CXX_COMPILER clang)
+endif(UNIX)
+
+set(CMAKE_BUILD_TYPE debug)
 set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -g -std=c99 -pedantic -pedantic-errors")
 set(CMAKE_C_FLAGS_RELEASE "-Wall -Wextra -g -std=c99 -pedantic -pedantic-errors -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -std=c++11 -pedantic -pedantic-errors")
+set(CMAKE_CXX_FLAGS_RELEASE "-Wall -Wextra -g -std=c++11 -pedantic -pedantic-errors -O3")
 
+# build directories
 set(CMAKE_BINARY_DIR build)
 set(EXECUTABLE_OUTPUT_PATH bin)
 
-add_executable (odem-sim main.c particle.c debug.c record.c analysis.c)
-#add_executable (odem-animate animate4.c)
+# dependencies
+add_executable(hw2 main.cpp element.cpp)
 
-# c building in unix we need to link against math libraries
-IF(UNIX)
-    target_link_libraries (odem-sim m)
-ENDIF(UNIX)
-
-target_link_libraries (odem-sim sqlite3)
-#target_link_libraries (odem-animate allegro)
-
-install (TARGETS odem-sim DESTINATION bin)
+install(TARGETS hw2 DESTINATION bin)
 
